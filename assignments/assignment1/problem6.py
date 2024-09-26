@@ -1,12 +1,15 @@
 import random
+from collections import deque
+
 
 # heuristic function
 def h_n(p1, p2):
     return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
 
-def print_path(maze, path):
+def print_path(maze, path, end):
     for x, y in path:
-        maze[x][y] = "."
+        if (x, y) != end:
+            maze[x][y] = "."
 
     print('-' * (len(maze[0]) * 2 + 3))
     for i in range(0, len(maze)):
@@ -80,7 +83,6 @@ class MazeSearch:
             self.start = (13, 2)
             self.maze[self.start[0]][self.start[1]] = 'S'
             self.end1 = (5, 23)
-            # self.end1 = (24, 20)
             self.maze[self.end1[0]][self.end1[1]] = 'O'
             self.end2 = (3, 2)
             self.maze[self.end2[0]][self.end2[1]] = '0'
@@ -95,45 +97,35 @@ class MazeSearch:
         print('-' * (len(self.maze[0])*2+3))
 
     def bfs(self, start, end):
-        # directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-        pass
-
-
-    def dfs(self, start, end):
-        # (x, y) -> x is vertical and y is horizontal
         directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-        stack = [(start, [start])]
-        visited = set()
+        queue = [(start, [start])]
+        visited = {start}
 
-        while stack:
-            print(visited)
-            (x, y), path = stack.pop()
+        while queue:
+            (x, y), path = queue.pop(0)
 
             if (x, y) == end:
-                print_path(self.maze, path)
                 return path
-            if (x, y) in visited:
-                continue
-
-            visited.add((x, y))
 
             for dx, dy in directions:
-                x, y = x + dx, y + dy
-                if 0 <= x < len(self.maze) and 0 <= y < len(self.maze[0]) and self.maze[x][y] != 'X' and (x, y) not in visited:
-                    stack.append(((x, y), path + [(x, y)]))
-        for x, y in visited:
-            self.maze[x][y] = '/'
+                nx, ny = x + dx, y + dy
 
+                if 0 <= nx < len(self.maze) and 0 <= ny < len(self.maze[0]) and self.maze[nx][ny] != 'X' and (nx, ny) not in visited:
+                    visited.add((nx, ny))
+                    # Uncomment to mark visited nodes
+                    # self.maze[nx][ny] = '/'
+                    queue.append(((nx, ny), path + [(nx, ny)]))
         return None
 
     def dfs_recursive(self, x, y, end, path, visited):
-        # Base case: if we've reached the end
+        # Base case - goal is reached
         if (x, y) == end:
             return path + [(x, y)]
 
         # Mark current node as visited
         visited.add((x, y))
-        self.maze[x][y] = '/'  # Optionally mark the maze to show the path visually
+        # Uncomment to show visited nodes
+        # self.maze[x][y] = '/'
 
         # Directions: right, down, left, up
         directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
@@ -144,7 +136,7 @@ class MazeSearch:
             # Check if the new position is within bounds, not a wall, and not visited
             if 0 <= nx < len(self.maze) and 0 <= ny < len(self.maze[0]) and self.maze[nx][ny] != 'X' and (nx, ny) not in visited:
                 result = self.dfs_recursive(nx, ny, end, path + [(x, y)], visited)
-                if result:  # If a path is found, return it
+                if result:
                     return result
 
         # If no path is found from this node, return None (backtrack)
@@ -153,10 +145,23 @@ class MazeSearch:
     def a_star(self):
         pass
 
-
+# Create maze
 mz = MazeSearch()
 mz.generate_maze(is_rand=True)
+
+# Print original maze
 mz.print_maze()
-x = mz.dfs_recursive(mz.start[0], mz.start[1], mz.end1, list(), set())
-mz.print_maze()
-print_path(mz.maze, x)
+
+# Run breadth first search with path shown
+print("################# BREADTH FIRST SEARCH #################")
+bfs_path = mz.bfs(mz.start, mz.end1)
+# mz.print_maze()
+print_path(mz.maze, bfs_path, mz.end1)
+
+# Run depth first search with path shown
+print("################# DEPTH FIRST SEARCH #################")
+dfs_path = mz.dfs_recursive(mz.start[0], mz.start[1], mz.end1, list(), set())
+# mz.print_maze()
+print_path(mz.maze, dfs_path, mz.end1)
+
+
