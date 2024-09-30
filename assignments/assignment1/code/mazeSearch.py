@@ -1,4 +1,5 @@
 import heapq
+import math
 import random
 import copy
 
@@ -21,7 +22,7 @@ def print_path(maze, path):
     print('-' * (len(m[0]) * 2 + 3))
 
 class MazeSearch:
-    def __init__(self):
+    def __init__(self, start=None, end1=None, end2=None):
         self.maze = [[' '] * 25 for _ in range(25)]
         self.walls = [[4, 5, 17, 18],
                       [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -49,21 +50,21 @@ class MazeSearch:
                       [18, 19],
                       []]
         self.directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-        self.start = None
-        self.end1 = None
-        self.end2 = None
+        self.start = start
+        self.end1 = end1
+        self.end2 = end2
 
     def set_walls(self, walls):
         self.walls = walls
 
-    def generate_maze(self, is_rand = True):
+    def generate_maze(self):
         if self.walls is None:
             return self.maze
 
         for i in range(0, len(self.walls)):
             for j in self.walls[i]:
                 self.maze[i][j] = 'X'
-        if is_rand:
+        if self.start is None or self.end1 is None or self.end2 is None:
             for i in range(0, 3):
                 x = random.randint(0, len(self.walls) - 1)
                 y = random.randint(0, len(self.walls) - 1)
@@ -80,11 +81,8 @@ class MazeSearch:
                     self.end2 = (x, y)
                     self.maze[x][y] = '2'
         else:
-            self.start = (13, 2)
             self.maze[self.start[0]][self.start[1]] = 'S'
-            self.end1 = (5, 23)
             self.maze[self.end1[0]][self.end1[1]] = '1'
-            self.end2 = (3, 2)
             self.maze[self.end2[0]][self.end2[1]] = '2'
 
     def print_maze(self):
@@ -119,7 +117,7 @@ class MazeSearch:
     def dfs_recursive(self, x, y, end, path, visited, count=0):
         # Base case - goal is reached
         if (x, y) == end:
-            print("Number of visited positions: " + str(count + 1))
+            print("Number of visited positions: " + str(count))
             print("Cost: " + str(len(path)))
             return path + [(x, y)]
 
@@ -143,17 +141,17 @@ class MazeSearch:
         # ( f(n), g(n), (x, y), path )
         priority_queue = [(0 + h_n(start, end), 0, start, [start])]
         visited = set()
+        count = 0
 
         while priority_queue:
-            priority_queue.sort(key=lambda a: a[0])
             _, g_n, (x, y), path = heapq.heappop(priority_queue)
 
             if (x, y) == end:
-                print("Number of visited positions: " + str(len(visited)))
+                print("Number of visited positions: " + str(count))
                 print("Cost: " + str(len(path)))
                 return path
 
-            visited.add((x, y))
+            count += 1
 
             for dx, dy in self.directions:
                 nx, ny = x + dx, y + dy
@@ -161,6 +159,7 @@ class MazeSearch:
                 if 0 <= nx < len(self.maze) and 0 <= ny < len(self.maze[0]) and self.maze[nx][ny] != 'X' and (nx, ny) not in visited:
                     new_g_n = g_n + 1
                     f_n = new_g_n + h_n((nx, ny), end)
+                    visited.add((nx, ny))
                     heapq.heappush(priority_queue, (f_n, new_g_n, (nx, ny), path + [(nx, ny)]))
 
         return None
