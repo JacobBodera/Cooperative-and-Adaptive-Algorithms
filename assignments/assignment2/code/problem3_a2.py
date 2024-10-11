@@ -40,6 +40,7 @@ def tabu_search(flow, dist, tabu_size, max_iter):
     current_config = list(range(n))
     random.shuffle(current_config)
     print(f"Initial configuration: {current_config}")
+    initial_configuration = current_config
     tabu = []
 
     best_config = current_config
@@ -98,12 +99,21 @@ def tabu_search(flow, dist, tabu_size, max_iter):
         if i % 25 == 0:
             print(f"Iteration: {i}: best cost: {best_cost}")
 
-    return best_config, best_cost
+    return initial_configuration, best_config, best_cost
 
 
 flow_matrix = np.loadtxt("assignment-2-Flow.csv", delimiter=",")
 dist_matrix = np.loadtxt("assignment-2-Distance.csv", delimiter=",")
 
-a = tabu_search(flow_matrix, dist_matrix, 3, 20000)
-print(a)
+configs = list()
+costs = list()
+initial = list()
 
+for i in range(20):
+    init, con, cost = tabu_search(flow_matrix, dist_matrix, 3, 20000)
+    configs.append(con)
+    costs.append(cost)
+    initial.append(init)
+
+for i in range(len(configs)):
+    print(f"Iteration {i}:\nInitial config: {initial[i]}\nBest configuration found: {configs[i]}\nCost: {costs[i]}\n")
