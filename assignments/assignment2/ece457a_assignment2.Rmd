@@ -69,19 +69,25 @@ define simulated_annealing(temp_0, alpha, bounds, max_iterations):
 
 ### Experiment 1: 10 Different Initial Points 
 
-<!-- ![](./images/experiment1_plot.png) -->
+![](./images/experiment1_plot.png)
 
 \newpage
 ### Experiment 2: 10 Different Initial Temperatures 
 
-<!-- ![](./images/experiment2_plot.png) -->
+![](./images/experiment2_plot.png)
 
 \newpage
 ### Experiment 3: 10 Different Annealing Schedules 
 
-<!-- ![](./images/experiment3_plot.png) -->
+![](./images/experiment3_plot.png)
 
 ## 4. Observations 
+
+From experiment one, it can be seen that the algorithm is generally very good at quickly finding a solution to this optimization problem, regardless of the initial guess. This can be seen in the plot as 8/10 of the executions took less than 3500 iterations. The two outliers in the plot show that there is some range of initial guess that requires more iterations of the algorithm to reach the goal. 
+
+From experiment two, it appears that temperature values around 100 perform the best. These tests were performed with a constant alpha value, and thus it appears that temperature around 100 worked the best for this cooling.
+
+From experiment three, it can be seen that the lower values of alpha do not perform as well in finding a solution and take more iterations. With an alpha value too small, this decreases the temperature to rapidly until it approaches zero and causes the probability function to be undefined.
 
 ## 5. Performance of SA 
 
@@ -92,7 +98,19 @@ Through the experimentation shown above, the best solution that was output from 
 
 The output of the program with these settings during this iteration can be seen in the figure below. 
 
-<!-- ![](./images/ece457a_a2_p1_best_solution.png) -->
+![](./images/ece457a_a2_p1_best_solution.png)
+
+These settings results in good solution due to a good cooling function and initial temperature. The geometric cooling function used for this algorithm results in the values being more likely to be accepted near the beginning of the execution and not accepted later in the execution. This allows the simulated annealing algorithm to be able so efficiently search the state space until it detects the minimum.
+
+The time complexity of this program and can be described as the following: 
+
+- `easom()` performs one simple calculation and thus the space and time complexity are both $O(1)$ 
+
+- `cost()` performs one calculation with x and therefore, has time and space complexity of $O(1)$ 
+
+- `cool()` simply updates the temperature value and so time and space complexity are both $O(1)$ 
+
+- `sim_annealing()` this algorithm contains one `for` loop which is dependent on the number of iterations and with each iteration, the cost and coordinates are stored in lists. Therefore, the time complexity is $O(i)$ and the space complexity is $O(2i)$ $\implies$ $O(i)$, where $i$ is the number of iterations.
 
 \newpage
 ## 6. Code 
