@@ -89,11 +89,11 @@ class CongaGame:
         best_move = None
 
         if not maximizing_player:
-            max_eval = -math.inf
+            max_eval = math.inf
             for move in self.generate_moves(board, self.BLACK):
                 new_board = self.make_move(board, stones, move)
                 eval, _ = self.minmax_alpha_beta(new_board, stones, depth - 1, True, alpha, beta)
-                if eval > max_eval:
+                if eval < max_eval:
                     max_eval = eval
                     best_move = move
                 alpha = max(alpha, eval)
@@ -101,11 +101,11 @@ class CongaGame:
                     break
             return max_eval, best_move
         else:
-            min_eval = math.inf
+            min_eval = -math.inf
             for move in self.generate_moves(board, self.WHITE):
                 new_board = self.make_move(board, stones, move)
                 eval, _ = self.minmax_alpha_beta(new_board, stones, depth - 1, False, alpha, beta)
-                if eval < min_eval:
+                if eval > min_eval:
                     min_eval = eval
                     best_move = move
                 beta = min(beta, eval)
@@ -119,7 +119,7 @@ def convert_dir(dir):
     if dir == "N":
         return (-1, 0)
     elif dir == "S":
-        return (-1, 0)
+        return (1, 0)
     elif dir == "E":
         return (0, 1)
     elif dir == "W":
@@ -163,24 +163,22 @@ def play_conga():
     game.display_board()
     while not game.is_game_over(game.board) and safety_count < 500:
         if game.current_player == game.BLACK:
-            e, move = game.minmax_alpha_beta(copy.deepcopy(game.board), copy.deepcopy(game.stones), 3, False)
+            e, move = game.minmax_alpha_beta(copy.deepcopy(game.board), copy.deepcopy(game.stones), depth = 5, maximizing_player = False)
             print(f"Best move: {move}, Eval: {e}")
             game.make_move(game.board, game.stones, move)
         if game.current_player == game.WHITE:
-            e, move = game.minmax_alpha_beta(copy.deepcopy(game.board), copy.deepcopy(game.stones), 3, True)
+            e, move = game.minmax_alpha_beta(copy.deepcopy(game.board), copy.deepcopy(game.stones), depth = 5, maximizing_player = True)
             print(f"Best move: {move}, Eval: {e}")
             r = int(input("Enter row: "))
             c = int(input("Enter column: "))
             d = input("Enter direction: ")
             d = convert_dir(d)
             game.make_move(game.board, game.stones, (r, c, d))
+        print("---------------------------")
 
         game.switch_player()
         game.display_board()
         safety_count += 1
-
-
-
 
 play_conga()
 

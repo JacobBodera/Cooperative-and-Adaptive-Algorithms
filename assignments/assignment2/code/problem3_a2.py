@@ -73,13 +73,18 @@ def tabu_search(flow, dist, tabu_size, max_iter):
         neighbours_cost.sort(key=lambda x: x[1])
         neighbours_cost = neighbours_cost[:80]
 
+        # if i % 2000 == 0:
+        #     tabu_size = random.randint(1, 10)
+        #     print(f"Tabu Size: {tabu_size}")
+
         for neighbour, cost in neighbours_cost:
             move = tuple(sorted([current_config.index(neighbour[0]), current_config.index(neighbour[1])]))
 
             if move not in tabu or cost < best_cost:
                 current_config = neighbour
                 current_cost = cost
-                tabu.append(move)
+                if current_cost != best_cost:
+                    tabu.append(move)
 
                 if len(tabu) > tabu_size:
                     tabu.pop(0)
@@ -109,8 +114,8 @@ configs = list()
 costs = list()
 initial = list()
 
-for i in range(20):
-    init, con, cost = tabu_search(flow_matrix, dist_matrix, 3, 20000)
+for i in range(5):
+    init, con, cost = tabu_search(flow_matrix, dist_matrix, 5, 20000)
     configs.append(con)
     costs.append(cost)
     initial.append(init)

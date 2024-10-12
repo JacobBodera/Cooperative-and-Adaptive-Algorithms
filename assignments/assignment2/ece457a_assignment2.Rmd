@@ -21,7 +21,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 **Goal State**: The goal state of this problem is to find the coordinate which minimizes the *Easom* function (within some degree of error). This goal state is $S = (\pi, \pi)$.
 
-**Actions:**: The actions available for the simulated annealing algorithm are as follows: 
+**Actions**: The actions available for the simulated annealing algorithm are as follows: 
 
 - change current state values of $x_1$ and $x_2$ using the neighbourhood function 
 
@@ -272,7 +272,7 @@ $$
 \end{bmatrix}
 $$
 
-**Actions:**: An action is defined as performing any legal move in Conga. This is defined in the assignment documentation, however, it involves removing all stones from a tile and moving in one of the 8 possible directions. Travel as far as possible in that direction and stop until you reach the edge of the board or a tile with enemy stones on it. Place 1 stone in each tile along that path, with all remaining stones being added to the last tile. Player turns alternate every action.
+**Actions**: An action is defined as performing any legal move in Conga. This is defined in the assignment documentation, however, it involves removing all stones from a tile and moving in one of the 8 possible directions. Travel as far as possible in that direction and stop until you reach the edge of the board or a tile with enemy stones on it. Place 1 stone in each tile along that path, with all remaining stones being added to the last tile. Player turns alternate every action.
 
 **Cost**: The cost defined for this problem in the number of legal moves available to white subtracted by the number of legal moves available for black. The means that positive cost values favour white and negative cost values favour black. 
 
@@ -290,6 +290,20 @@ $$
 # Question 3 Solution
 
 ## 1. Optimization Formulation 
+
+**State Representation**: The state representation of this optimization problem is a list containing the 20 departments involved in the problem in the order they place in the locations (going down the rows from left to right). For example, 
+
+$$S = {15, 5, 3, 7, 12, 11, 20, 2, 19, 1, 17, 16, 4, 14, 6, 13, 9, 8, 11, 18}$$
+
+**Initial State**: The initial state for this optimization problem is any random configuration of department.
+
+**Goal State**: The goal state is a configuration of department placements which produces a minimum cost of 2570 in the case of this implementation.
+
+**Actions**: The actions that can be performed in this optimization involve rearranging which department are place in each location. This can involve swapping two departments, swapping multiple departments, or completely rearranging the locations of departments.
+
+**Cost**: The cost is a function of the distance of any two locations and the flow of one department with another. 
+
+$$cost = (flow) \cdot (rectilinear distance)$$
 
 ## 2. Performance Evaluation 
 
@@ -399,8 +413,35 @@ Cost: 2574.0
 
 ### Experiment 2: Different Tabu Sizes 
 
+**Tabu List Size = 2** 
+
+```
+Iteration 0:
+Initial config: [6, 5, 14, 10, 17, 2, 15, 9, 7, 8, 11, 12, 16, 0, 4, 13, 1, 18, 3, 19]
+Best configuration found: [8, 2, 13, 1, 17, 15, 9, 11, 14, 18, 12, 10, 7, 19, 3, 5, 0, 4, 6, 16]
+Cost: 2574.0
+
+Iteration 1:
+Initial config: [18, 3, 2, 7, 9, 0, 10, 17, 6, 19, 8, 4, 12, 11, 16, 5, 14, 1, 13, 15]
+Best configuration found: [5, 0, 6, 19, 16, 12, 4, 10, 7, 3, 15, 9, 11, 14, 18, 8, 2, 13, 1, 17]
+Cost: 2580.0
+``` 
+
+**Tabu List Size = 8**
+
 ### Experiment 3: Dynamic Tabu Size 
 
 ### Experiment 4: Adding Aspiration Criteria 
 
-### Experiment 5: Frequency-Based Tabu List
+### Experiment 5: Frequency-Based Tabu List 
+
+## Time and Memory Complexity 
+
+For Tabu Search, the algorithm's time complexity is dominated by the neighbour generation function with is a function of $O(n^2)$. With each neighbour, the cost is calculated which introduces another complexity of $O(n^2)$, leading to an overall time complexity of $O(n^4)$. However, this is also affected by how the generation of the neighbours in performed. If only a constant number of neighbours is generated for each configuration, this bring the time complexity down to $O(n^2)$, since the functions are executed a constant number of times, leaving only the cost contributing to this complexity. 
+
+For the space complexity, the main aspect adding to the complexity is storing the generated neighbours of a configuration. the number of generated neighbours is $n^2$, with each neighbour containing $n$ configurations, leading to a space complexity of $O(n^3)$. The tabu list is also a factor to consider, however, since this list is either a fixed value or dynamic with some complexity $O(n)$, this is dominated by the neighbour generation. Therefore, the overall space complexity is $O(n^3)$. This complexity is also dependent on the number of neighbours generated, similar to the time complexity.
+
+
+
+
+
