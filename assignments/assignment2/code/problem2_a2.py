@@ -1,5 +1,6 @@
 import copy
 import math
+from random import random, choice
 
 
 class CongaGame:
@@ -36,14 +37,14 @@ class CongaGame:
                     continue
                 for d in directions:
                     m = (i, j, d)
-                    if self.is_legal_move(i, j, d):
+                    if self.is_legal_move(i, j, d, player):
                         moves.append(m)
         return moves
 
-    def is_legal_move(self, r, c, d):
+    def is_legal_move(self, r, c, d, player):
         r = r + d[0]
         c = c + d[1]
-        if 0 <= r < 4 and 0 <= c < 4 and (self.board[r][c] is None or self.board[r][c] == self.current_player):
+        if 0 <= r < 4 and 0 <= c < 4 and (self.board[r][c] is None or self.board[r][c] == player):
             return True
         return False
 
@@ -86,14 +87,15 @@ class CongaGame:
         if depth == 0 or self.is_game_over(board):
             return self.evaluate(board), None
 
-        best_move = None
-
-        if not maximizing_player:
-            max_eval = math.inf
-            for move in self.generate_moves(board, self.BLACK):
-                new_board = self.make_move(board, stones, move)
-                eval, _ = self.minmax_alpha_beta(new_board, stones, depth - 1, True, alpha, beta)
-                if eval < max_eval:
+        if maximizing_player:
+            best_move = None
+            max_eval = -math.inf
+            moves = self.generate_moves(board, self.WHITE)
+            for move in moves:
+                new_board = [row[:] for row in board]
+                new_stones = [row[:] for row in stones]
+                eval, _ = self.minmax_alpha_beta(new_board, new_stones, depth - 1, False, alpha, beta)
+                if eval > max_eval:
                     max_eval = eval
                     best_move = move
                 alpha = max(alpha, eval)
@@ -101,17 +103,26 @@ class CongaGame:
                     break
             return max_eval, best_move
         else:
-            min_eval = -math.inf
-            for move in self.generate_moves(board, self.WHITE):
-                new_board = self.make_move(board, stones, move)
-                eval, _ = self.minmax_alpha_beta(new_board, stones, depth - 1, False, alpha, beta)
-                if eval > min_eval:
+            best_move = None
+            min_eval = math.inf
+            moves = self.generate_moves(board, self.BLACK)
+            for move in moves:
+                new_board = [row[:] for row in board]
+                new_stones = [row[:] for row in stones]
+                eval, _ = self.minmax_alpha_beta(new_board, new_stones, depth - 1, True, alpha, beta)
+                if eval < min_eval:
                     min_eval = eval
                     best_move = move
                 beta = min(beta, eval)
                 if beta <= alpha:
                     break
             return min_eval, best_move
+
+    def random_move(self):
+        legal_moves = self.generate_moves(self.board, self.current_player)
+        if legal_moves:
+            return choice(legal_moves)
+        return None
 
 
 
@@ -163,18 +174,15 @@ def play_conga():
     game.display_board()
     while not game.is_game_over(game.board) and safety_count < 500:
         if game.current_player == game.BLACK:
-            e, move = game.minmax_alpha_beta(copy.deepcopy(game.board), copy.deepcopy(game.stones), depth = 5, maximizing_player = False)
+            print("------BLACK-------")
+            e, move = game.minmax_alpha_beta(game.board, game.stones, depth = 5, maximizing_player = False)
             print(f"Best move: {move}, Eval: {e}")
             game.make_move(game.board, game.stones, move)
         if game.current_player == game.WHITE:
-            e, move = game.minmax_alpha_beta(copy.deepcopy(game.board), copy.deepcopy(game.stones), depth = 5, maximizing_player = True)
-            print(f"Best move: {move}, Eval: {e}")
-            r = int(input("Enter row: "))
-            c = int(input("Enter column: "))
-            d = input("Enter direction: ")
-            d = convert_dir(d)
-            game.make_move(game.board, game.stones, (r, c, d))
-        print("---------------------------")
+            print("------WHITE-------")
+            random_move = game.random_move()
+            if random_move:
+                game.make_move(game.board, game.stones, random_move)
 
         game.switch_player()
         game.display_board()
@@ -182,6 +190,14 @@ def play_conga():
 
 play_conga()
 
+# b = [["B", "W", None, None], [None, None, None, None], [None, None, None, None], [None, None, None, None]]
+# s = [[10, 10, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+#
+# game = CongaGame()
+# game.board = b
+# game.stones = s
+# print(game.minmax_alpha_beta(game.board, game.stones, depth = 3, maximizing_player = True))
+# game.display_board()
 
 
 

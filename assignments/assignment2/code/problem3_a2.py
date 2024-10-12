@@ -35,6 +35,12 @@ def diversify_solution(current_configuration, num_swaps=3):
         current_configuration[i], current_configuration[j] = current_configuration[j], current_configuration[i]
     return current_configuration
 
+def list_to_string(l):
+    out = ""
+    for i in range(len(l)):
+        out += str(l[i])
+    return out
+
 def tabu_search(flow, dist, tabu_size, max_iter):
     n = len(flow)
     current_config = list(range(n))
@@ -42,6 +48,7 @@ def tabu_search(flow, dist, tabu_size, max_iter):
     print(f"Initial configuration: {current_config}")
     initial_configuration = current_config
     tabu = []
+    frequency_config = {}
 
     best_config = current_config
     best_cost = calc_cost(current_config, flow, dist)
@@ -83,7 +90,7 @@ def tabu_search(flow, dist, tabu_size, max_iter):
             if move not in tabu or cost < best_cost:
                 current_config = neighbour
                 current_cost = cost
-                if current_cost != best_cost:
+                if current_cost != best_cost or (list_to_string(current_config) in frequency_config and frequency_config[list_to_string(current_config)] >= 250):
                     tabu.append(move)
 
                 if len(tabu) > tabu_size:
@@ -91,6 +98,10 @@ def tabu_search(flow, dist, tabu_size, max_iter):
                 if current_cost < best_cost:
                     best_cost = current_cost
                     best_config = current_config
+                    if list_to_string(best_config) in frequency_config:
+                        frequency_config[list_to_string(best_config)] += 1
+                    else:
+                        frequency_config[list_to_string(best_config)] = 1
                     shuffle_light = 0
                     shuffle_medium = 0
                     shuffle_large = 0

@@ -276,13 +276,71 @@ $$
 
 **Cost**: The cost defined for this problem in the number of legal moves available to white subtracted by the number of legal moves available for black. The means that positive cost values favour white and negative cost values favour black. 
 
-`Cost = (# legal white moves) - (# legal black moves)`
+`Cost = (# legal white moves) - (# legal black moves)` 
+
+### Pseudo Code 
+
+```
+def minmax:
+  if depth is 0 or game over:
+    return evaluation
+
+  if maximizing:
+    max_eval = -inf
+    moves = get moves
+    for move in moves:
+      make move
+      eval = minmax(depth - 1, minimizing)
+      alpha = max(alpha, eval)
+      if beta <= alpha
+        prune branch
+    return max eval
+      
+  if minimizing:
+    max_eval = inf
+    moves = get moves
+    for move in moves:
+      make move
+      eval = minmax(depth - 1, maximizing)
+      beta = min(beta, eval)
+      if beta <= alpha
+        prune branch
+    return max eval
+```
 
 ## 2. Observations of Algorithm vs. Random Agent 
 
+Against a random opponent, the minmax/alpha beta pruning opponent performed very well against the random opponent. Out of 100 games, 77 of the games were won by the AI, 2 were lost, and 21 of the game reached the maximum number of iterations set by the program.
+
 ## 3. Program Output 
 
+Here is an example of the program output, showing the last state of a game where black loses.
+
+```
+------BLACK-------
+
+ -  -  -  W     0  0  0  1
+ -  -  W  W     0  0  2  3
+ W  -  W  -     1  0  1  0
+ -  -  W  B     0  0  2  10
+
+------WHITE-------
+
+ -  -  -  W     0  0  0  1
+ -  -  -  W     0  0  0  3
+ W  -  W  W     1  0  1  2
+ -  -  W  B     0  0  2  10
+``` 
+
+Here is the drawing work showing the branching posibilities of moves with white as the maximizing player. 
+
+![](images/drawing.jpeg)
+
 ## 4. Discussion on Time and Memory Complexity 
+
+The time complexity of this program with only the minmax algorithm is $O(b^d)$ and with alpha-beta pruning is $O(b^{d/2})$, where $b$ is the branching factor and $d$ is the depth of the search. 
+
+For the space complexity, the algorithm must store the game state for every possible move at every depth, and thus the space complexity for minmax and alpha-beta pruning is $O(d)$.
 
 
 \newpage
@@ -427,13 +485,114 @@ Best configuration found: [5, 0, 6, 19, 16, 12, 4, 10, 7, 3, 15, 9, 11, 14, 18, 
 Cost: 2580.0
 ``` 
 
-**Tabu List Size = 8**
+**Tabu List Size = 8** 
+
+```
+Iteration 0:
+Initial config: [3, 2, 17, 0, 10, 11, 4, 1, 6, 14, 19, 12, 8, 13, 5, 9, 15, 18, 16, 7]
+Best configuration found: [15, 0, 10, 7, 16, 12, 4, 6, 19, 3, 5, 9, 11, 14, 18, 8, 2, 13, 1, 17]
+Cost: 2574.0
+
+Iteration 1:
+Initial config: [9, 7, 11, 19, 0, 1, 5, 16, 15, 13, 8, 10, 12, 14, 4, 17, 2, 18, 6, 3]
+Best configuration found: [5, 0, 6, 4, 16, 12, 7, 19, 14, 18, 15, 10, 11, 1, 3, 8, 2, 9, 13, 17]
+Cost: 2570.0
+``` 
+
+From the experiment results, it appears that the test with the larger tabu list size performed better than the test with the smaller one. Not only did the larger tabu size find better solutions, it was also able to find an optimal solution in one of the two executions.
 
 ### Experiment 3: Dynamic Tabu Size 
 
+```
+Iteration 0:
+Initial config: [19, 7, 11, 2, 9, 5, 16, 18, 8, 13, 4, 15, 0, 10, 3, 17, 1, 14, 12, 6]
+Best configuration found: [16, 3, 10, 18, 15, 12, 19, 7, 14, 8, 4, 6, 11, 1, 13, 5, 0, 9, 17, 2]
+Cost: 2588.0
+
+Iteration 1:
+Initial config: [7, 6, 16, 11, 14, 0, 13, 18, 3, 17, 1, 2, 15, 8, 5, 4, 12, 9, 10, 19]
+Best configuration found: [5, 0, 6, 4, 16, 12, 7, 19, 14, 18, 15, 10, 11, 1, 3, 8, 2, 9, 13, 17]
+Cost: 2570.0
+
+Iteration 2:
+Initial config: [10, 15, 0, 12, 4, 6, 5, 9, 13, 18, 8, 19, 7, 16, 11, 1, 14, 2, 17, 3]
+Best configuration found: [5, 0, 6, 4, 16, 12, 7, 19, 14, 18, 15, 10, 11, 1, 3, 8, 2, 9, 13, 17]
+Cost: 2570.0
+
+Iteration 3:
+Initial config: [6, 11, 10, 2, 15, 18, 4, 0, 5, 19, 16, 7, 8, 3, 13, 9, 1, 14, 12, 17]
+Best configuration found: [8, 2, 9, 13, 17, 15, 10, 11, 1, 3, 12, 7, 19, 14, 18, 5, 0, 6, 4, 16]
+Cost: 2570.0
+
+Iteration 4:
+Initial config: [6, 16, 8, 18, 4, 17, 1, 3, 7, 0, 14, 2, 11, 19, 9, 13, 10, 15, 5, 12]
+Best configuration found: [16, 4, 6, 0, 5, 18, 14, 19, 7, 12, 3, 1, 11, 10, 15, 17, 13, 9, 2, 8]
+Cost: 2570.0
+``` 
+
+For this experiment, I chose a dynamic tabu list size in the range [1, 10] and chose to update the size every 2000 iterations. The results were very positive, with 4/5 executions finding an optimal solution to the problem.
+
 ### Experiment 4: Adding Aspiration Criteria 
 
+```
+Iteration 0:
+Initial config: [7, 3, 4, 15, 10, 11, 2, 16, 14, 18, 13, 9, 19, 8, 0, 17, 5, 6, 1, 12]
+Best configuration found: [5, 0, 6, 4, 16, 12, 7, 19, 14, 18, 15, 10, 11, 1, 3, 8, 2, 9, 13, 17]
+Cost: 2570.0
+
+Iteration 1:
+Initial config: [4, 7, 8, 2, 17, 10, 1, 14, 6, 9, 19, 11, 15, 3, 13, 12, 16, 18, 5, 0]
+Best configuration found: [17, 13, 9, 2, 8, 3, 1, 11, 10, 15, 18, 14, 19, 7, 12, 16, 4, 6, 0, 5]
+Cost: 2570.0
+
+Iteration 2:
+Initial config: [18, 3, 0, 11, 7, 15, 8, 19, 6, 10, 5, 1, 9, 14, 16, 12, 13, 2, 4, 17]
+Best configuration found: [5, 0, 6, 4, 16, 12, 7, 19, 14, 18, 15, 10, 11, 1, 3, 8, 2, 9, 13, 17]
+Cost: 2570.0
+
+Iteration 3:
+Initial config: [10, 15, 9, 2, 0, 3, 18, 13, 14, 12, 16, 6, 17, 19, 4, 7, 5, 11, 8, 1]
+Best configuration found: [5, 0, 6, 4, 16, 12, 7, 19, 14, 18, 15, 10, 11, 1, 3, 8, 2, 9, 13, 17]
+Cost: 2570.0
+
+Iteration 4:
+Initial config: [1, 12, 19, 14, 16, 15, 5, 18, 11, 0, 8, 6, 4, 9, 17, 3, 13, 2, 7, 10]
+Best configuration found: [17, 13, 9, 2, 8, 3, 1, 11, 10, 15, 18, 14, 19, 7, 12, 16, 4, 6, 0, 5]
+Cost: 2570.0
+```
+
+The aspiration criteria added in this experiment involves not adding moves to the tabu list that result in a configuration which has a cost equal to the current best cost. This experiment performed very well, with 5/5 of the tests finding an optimal solution to the problem.
+
 ### Experiment 5: Frequency-Based Tabu List 
+
+```
+Iteration 0:
+Initial config: [19, 17, 7, 9, 5, 2, 18, 0, 14, 10, 16, 8, 13, 6, 1, 3, 15, 11, 12, 4]
+Best configuration found: [17, 13, 9, 2, 8, 3, 1, 11, 10, 15, 18, 14, 19, 7, 12, 16, 4, 6, 0, 5]
+Cost: 2570.0
+
+Iteration 1:
+Initial config: [5, 6, 10, 0, 1, 2, 4, 13, 7, 8, 3, 18, 9, 11, 16, 12, 19, 15, 17, 14]
+Best configuration found: [5, 0, 6, 4, 16, 12, 7, 19, 14, 18, 15, 10, 11, 1, 3, 8, 2, 9, 13, 17]
+Cost: 2570.0
+
+Iteration 2:
+Initial config: [8, 19, 9, 2, 14, 13, 0, 1, 4, 17, 18, 3, 7, 10, 11, 15, 6, 16, 12, 5]
+Best configuration found: [16, 4, 6, 0, 5, 18, 14, 19, 7, 12, 3, 1, 11, 10, 15, 17, 13, 9, 2, 8]
+Cost: 2570.0
+
+Iteration 3:
+Initial config: [4, 13, 14, 18, 12, 11, 5, 16, 19, 6, 8, 17, 3, 0, 15, 9, 2, 7, 10, 1]
+Best configuration found: [5, 0, 6, 4, 16, 12, 7, 19, 14, 18, 15, 10, 11, 1, 3, 8, 2, 9, 13, 17]
+Cost: 2570.0
+
+Iteration 4:
+Initial config: [18, 12, 19, 1, 2, 17, 7, 16, 9, 0, 8, 15, 6, 14, 11, 5, 3, 10, 4, 13]
+Best configuration found: [16, 6, 4, 0, 5, 3, 19, 7, 10, 12, 18, 14, 11, 9, 15, 17, 1, 13, 2, 8]
+Cost: 2574.0
+```
+
+For this experiment, I added a frequency based tabu list where if the best configuration is the best for more than 250 iterations, then the configuration is added to the tabu list. This hopes to avoid the algorithm getting stuck in local minima. This method performed quite well with 4/5 test runs achieving an optimal solution.
 
 ## Time and Memory Complexity 
 
