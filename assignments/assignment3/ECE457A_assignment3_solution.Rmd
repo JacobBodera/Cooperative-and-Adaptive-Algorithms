@@ -1,0 +1,11 @@
+---
+title: "Assignment 3 Solution"
+author: "Jacob Bodera"
+date: "2024-11-10"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
