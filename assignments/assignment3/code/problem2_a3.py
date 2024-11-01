@@ -1,25 +1,3 @@
----
-title: "Assignment 3 Solution"
-author: "Jacob Bodera"
-date: "2024-11-10"
-output: pdf_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-\newpage
-
-# Solution 1
-
-\newpage
-
-# Solution 2
-
-## Software Implementation 
-
-```
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -64,7 +42,7 @@ def adaptive_es(dim, generations, c, sigma_0):
 ## Defining Testing Parameters
 dim = 10
 sigma_0 = 0.1/(2*np.sqrt(3))
-generations = 500
+generations = 1500
 num_simulations = 50
 c_values = [0.6, 0.8, 1.0]
 
@@ -89,14 +67,3 @@ plt.title("Adaptive (1+1)-ES on 10-dimensional Sphere Function")
 plt.legend()
 plt.grid()
 plt.savefig("../images/problem2_a3.png", format="png", dpi=1000)
-```
-
-## Result of (1 + 1)-ES Algorithm 
-
-Looking at the plot below, it appears that a value of $c=0.8$ produced the fastest convergence of the minimization parameter $x$ $\in$ $\mathbb{R}^{10}$. This is consistent with the nominal value given in the problem of $c=0.817$, however all of the cases converged fairly quickly, with latest converging model having a value of $c=0.6$ and converging at approximately $1100$ generations.
-
-![](./images/problem2_a3.png)
-
-\newpage
-
-# Solution 3
