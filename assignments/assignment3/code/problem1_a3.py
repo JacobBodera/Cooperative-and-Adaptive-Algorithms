@@ -4,11 +4,11 @@ from control_parameters import performance_results
 import numpy as np
 import matlab.engine
 
-POPULATION_SIZE = 100
-NUM_GENERATIONS = 150
+POPULATION_SIZE = 25
+NUM_GENERATIONS = 100
 CROSSOVER_PROB = 0.6
 ALPHA = 0.6
-MUTATION_PROB = 0.25
+MUTATION_PROB = 0.90
 ELITISM_NUM = 2
 ALLELE_BOUNDS = [(2, 18), (1.05, 9.42), (0.26, 2.37)]
 ENG = matlab.engine.start_matlab()
@@ -95,9 +95,9 @@ print(f"Best Gene: {genes[-1]}")
 plt.plot(range(1, NUM_GENERATIONS + 1), fit)
 plt.xlabel("Generation")
 plt.ylabel("Best Fitness")
-plt.title("Genetic Algorithm (P = 100, G = 150)")
+plt.title("Genetic Algorithm (Mutation % = 0.90)")
 plt.grid()
-plt.savefig("../images/problem1_a3_p100_g150.png", format="png", dpi=1000)
+plt.savefig("../images/problem1_a3_p25_g100_mprob90.png", format="png", dpi=1000)
 
 
 
