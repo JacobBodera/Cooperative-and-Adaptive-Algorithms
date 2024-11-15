@@ -86,7 +86,7 @@ print(f"% Error: {100*abs(fbest - ACTUAL_MIN_FIT)/abs(ACTUAL_MIN_FIT)}")
 ## Trajectory plot
 plt.figure(figsize=(10, 8))
 for particle_path in trajectories:
-    particle_path = np.array(particle_path)  # Convert to numpy array for easy indexing
+    particle_path = np.array(particle_path)
     plt.plot(particle_path[:, 0], particle_path[:, 1], linestyle="--", marker="o", markersize=2, alpha=0.5)
 
 # Mark initial positions
