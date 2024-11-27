@@ -4,8 +4,8 @@ import itertools
 PROB_MUTATION_VERSUS_CROSS = 0.4
 PROB_MUTATION = 0.1
 
-POP = 700
-GEN = 1000
+POP = 500
+GEN = 500
 NUM_TEST_CASES = 0
 
 DEPTH = 5
@@ -20,6 +20,7 @@ functions = {
     'NOT': lambda x: not x,
     'IF': lambda x, y, z: y if x else z
 }
+fitness_cache = {}
 
 def random_terminal():
     return random.choice(terminals)
@@ -40,6 +41,14 @@ def fitness_mult_6(program):
                             if evaluate_program(program, inputs) == expected_d:
                                 num_correct += 1
     return num_correct / 64.0
+
+def cached_fitness(program, test_cases):
+    program_str = str(program)
+    if program_str in fitness_cache:
+        return fitness_cache[program_str]
+    fitness_score = fitness(program, test_cases)
+    fitness_cache[program_str] = fitness_score
+    return fitness_score
 
 def fitness(program, test_cases):
     num_correct = 0
@@ -125,14 +134,14 @@ def start_environment(population_size, generations):
     for g in range(generations):
         # current_mutation_rate = max(PROB_MUTATION, (1 - g / generations))
 
-        population = sorted(population, key=lambda p: fitness(p, test_cases), reverse=True)
-        best_fitness = fitness(population[0], test_cases)
+        population = sorted(population, key=lambda p: cached_fitness(p, test_cases), reverse=True)
+        best_fitness = cached_fitness(population[0], test_cases)
         print(f"Generation: {g} --- Best Fitness: {best_fitness}")
 
         if best_fitness == 1.0:
             return population[0], best_fitness
 
-        new_population = population[:10]
+        new_population = population[:POP // 20]
         while len(new_population) < population_size:
             if random.random() > PROB_MUTATION_VERSUS_CROSS:
                 parent1, parent2 = random.choices(population[:population_size // 2], k=2)

@@ -3,8 +3,8 @@ from matplotlib import pyplot as plt
 
 
 BOUNDS = (-5, 5)
-NUMBER_PARTICLES = 5
-MAX_ITERATIONS = 200
+NUMBER_PARTICLES = 20
+MAX_ITERATIONS = 500
 
 
 def objective(pos):
@@ -19,16 +19,42 @@ def initialize_swarm(num_particles, bounds):
 def update_velocities(x, v, pbest, gbest, w=0.792, c1=1.4944, c2=1.4944):
     r1 = np.random.uniform(low=0, high=1, size=2)
     r2 = np.random.uniform(low=0, high=1, size=2)
-    return (
+    velocity = (
             w * v +
             c1 * r1 * (pbest - x) +
             c2 * r2 * (gbest - x)
     )
+    velocity = np.clip(velocity, -1, 1)
+    return velocity
+
+def update_velocities_constriction(x, v, pbest, gbest, c1=2.4944, c2=2.4944):
+    r1 = np.random.uniform(low=0, high=1, size=2)
+    r2 = np.random.uniform(low=0, high=1, size=2)
+    phi = c1 + c2
+    k = 2 / abs(2 - phi - np.sqrt(phi**2 - 4*phi))
+    velocity = k * (
+            v +
+            c1 * r1 * (pbest - x) +
+            c2 * r2 * (gbest - x)
+    )
+    velocity = np.clip(velocity, -1, 1)
+    return velocity
+
+def update_velocities_gcpso(v, gbest, personal_best, rho = 1, w=0.792):
+    r = np.random.uniform(low=0, high=1, size=2)
+    velocity = (
+        w * v -
+        personal_best +
+        gbest +
+        rho * r
+    )
+    velocity = np.clip(velocity, -1, 1)
+    return velocity
 
 def update_positions(positions, velocities, bounds):
     return np.clip(a = positions + velocities, a_min = bounds[0], a_max = bounds[1])
 
-def deploy_swarm(num_particles, bounds, max_iterations):
+def deploy_swarm(num_particles, bounds, max_iterations, v_update = "inertia"):
     positions, velocities = initialize_swarm(num_particles, bounds)
     # Best positions for each particle
     personal_bests = positions.copy()
@@ -38,6 +64,10 @@ def deploy_swarm(num_particles, bounds, max_iterations):
     global_best = personal_bests[np.argmin(personal_fitness_bests)]
     # The fitness of the best position
     global_fitness_best = min(personal_fitness_bests)
+    # Variable for GCPSO
+    rho = 1
+    success_count = 0
+    failure_count = 0
 
     # Data for plots
     particle_trajectories = [[] for _ in range(num_particles)]
@@ -55,8 +85,15 @@ def deploy_swarm(num_particles, bounds, max_iterations):
         best_fitness_history.append(global_fitness_best)
 
         for p in range(num_particles):
-            velocities[p] = update_velocities(x = positions[p], v = velocities[p],
-                                              pbest = personal_bests[p], gbest = global_best)
+            if v_update == "inertia":
+                velocities[p] = update_velocities(x = positions[p], v = velocities[p],
+                                                  pbest = personal_bests[p], gbest = global_best)
+            elif v_update == "constriction":
+                velocities[p] = update_velocities_constriction(x=positions[p], v=velocities[p],
+                                                  pbest=personal_bests[p], gbest=global_best)
+            elif v_update == "gcpso":
+                velocities[p] = update_velocities_gcpso(v=velocities[p], gbest=global_best,
+                                                        personal_best = personal_bests[p], rho = rho)
             positions[p] = update_positions(positions[p], velocities[p], bounds=bounds)
 
             # Updating trajectory information
@@ -71,11 +108,29 @@ def deploy_swarm(num_particles, bounds, max_iterations):
             if p_fitness < global_fitness_best:
                 global_best = positions[p]
                 global_fitness_best = p_fitness
+                failure_count = 0
+                success_count += 1
+            elif p_fitness > global_fitness_best:
+                success_count = 0
+                failure_count += 1
 
-    return global_best, global_fitness_best, particle_trajectories, initial_positions, avg_fitness_history, best_fitness_history
+            if success_count >= 100:
+                rho = 2 * rho
+            if failure_count >= 100:
+                rho = rho / 2
+
+    return (global_best,
+            global_fitness_best,
+            particle_trajectories,
+            initial_positions,
+            avg_fitness_history,
+            best_fitness_history)
 
 
-gbest, fbest, trajectories, initial_ps, avg_fitness_hist, best_fitness_hist = deploy_swarm(NUMBER_PARTICLES, BOUNDS, MAX_ITERATIONS)
+gbest, fbest, trajectories, initial_ps, avg_fitness_hist, best_fitness_hist = deploy_swarm(NUMBER_PARTICLES,
+                                                                                           BOUNDS,
+                                                                                           MAX_ITERATIONS,
+                                                                                           v_update = "inertia")
 
 ACTUAL_MIN_POS = [0.089840, -0.712659]
 ACTUAL_MIN_FIT = objective(ACTUAL_MIN_POS)
@@ -103,7 +158,7 @@ plt.ylabel("Y Position")
 plt.title("Particle Trajectories and Final Global Best Position")
 plt.legend()
 plt.grid(True)
-plt.savefig('../images/problem2_a4_trajectories.png')
+# plt.savefig('../images/problem2_a4_trajectories_constriction.png')
 
 ## Average fitness plot
 plt.figure(figsize=(10, 6))
@@ -114,4 +169,4 @@ plt.ylabel("Fitness Value")
 plt.title("Average Fitness and Best Fitness Over Time")
 plt.legend()
 plt.grid(True)
-plt.savefig('../images/problem2_a4_fitness.png')
+# plt.savefig('../images/problem2_a4_fitness_constriction.png')
