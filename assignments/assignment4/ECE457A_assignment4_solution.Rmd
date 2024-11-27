@@ -15,15 +15,28 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Experimentation with PSO in NetLogo 
 
-I ran seven different experiments in the NetLogo simulation to see how different parameters affect the swarms ability to location the global minimum of the search space. The parameters that were tested include the population size (p), speed limit (s), particle inertia (i), personal-best factor (pb), and global-best factor (gb). The plots below show some of the results from experimenting with this model. 
+I ran seven different experiments in the NetLogo simulation to see how different parameters affect the swarms ability to location the global maximum of the search space. The parameters that were tested include the population size (p), speed limit (s), particle inertia (i), personal-best factor (pb), and global-best factor (gb). The plots in Appendix B show some of the results from experimenting with this model. From these experiments, I gained some important understanding as to how these different parameters alter the behaviour of the model. 
 
-![](./images/q1_p30_s2_i0.6_pb17_gb17.png){width=50%}
-![](./images/q1_p80_s2_i0.6_pb17_gb17.png){width=50%}
-![](./images/q1_p30_s6_i0.6_pb17_gb17.png){width=50%}
-![](./images/q1_p30_s2_i0.729_pb17_gb17.png){width=50%}
-![](./images/q1_p30_s2_i0.6_pb1494_gb17.png){width=50%}
-![](./images/q1_p30_s2_i0.6_pb17_gb1494.png){width=50%}
-![](./images/q1_p30_s2_i0.6_pb1494_gb1494.png){width=50%}
+The population size makes a drastic difference in the performance of the model. For the smaller population size of $p = 30$, the swarm did not seem to locate the global maximum in all of the tests I did. As well, I noticed that after a some time, the particles would just congregate in small clusters surrounding local maximum and wouldn't make any further progress. With the larger population, the results improved drastically with the swarm immediately finding the global maximum on almost every test I ran. This is likely due to there being a greater probability that any one particle would be initialized to a position near to the maximum and would be able to quickly converge on it. From these results, it appears that a larger population size produces better results. 
+
+For the speed limit, the results were very clear and conclusive that a larger speed limit makes it much more difficult for the swarm to converge. The benefit to a larger speed limit may be to increase the speed at which the swarm is able to locate a desirable space, however, it makes it much more likely to overshoot any good solution. The smaller speed limit performed much better as it found a better maximum on average and the swarm seemed much less erratic. From these results, it seems that a larger speed limit may be beneficial at the beginning of the run to leverage exploration, and then decreasing the limit to leverage exploitation and better converge on a maximum. 
+
+In the experiments, it appeared that running the simulation with a larger inertia value slightly decreased the performance of the model. This may simply be due to the combination of the relatively small social factors in combination with the large inertia which make the particles stray away from potentially favorable positions found by other particles. This setup had too much of a reliance on explorative factors that it did a very poor job at converging at the maxima. 
+
+Three experiments were run for different personal-best and global-best factors and the results generally showed that the smaller values for each of these exploitative factors, paired with the smaller inertia value of 0.6, produced the best performance. With the large personal-best factor, it performed very well but did not weight the information of the other particles and strongly and so it would not travel towards the best known position as much and would often remain in the same general area throughout its search. With a larger global-best factor, the particles converge together too rapidly and cause the swarm to potentially get stuck in a local maximum (this could potentially be improved with a larger population as there would be a great chance on of the particles would be close to the global maximum).
+
+
+## Comparison of NetLogo Implementation to Classical PSO 
+
+The motion formulation in the NetLogo implementation of PSO is slightly different than the classical PSO by the equations that they use to update the velocities of each particle. In classical PSO, the velocity updating equation relies on three components which include the inertial component which acts to keep the particle's momentum, and then two components to add personal and global best position components. As can be seen from the equation below, the inertia is only a factor of the momentum component of the equation. 
+
+$$v_{i+1} = wv_i + c_1r_1(P_{best} - x_i) + c_2r_2(N_{best} - x_i)$$ 
+
+In the NetLogo implementation of PSO, a similar modification is performed with the momentum component where the current speed of the particle is multiplied by the inertia for the horizontal (`set vx particle-inertia * vx`) and the vertical (`set vy particle-inertia * vy`) components. The part that differs from the classical PSO is that when adding the personal and global components, they are scaled by a factor of `1 - particle-inertia`. This means that with a higher inertia value, the particle retains more of its velocity and the attractive components from the rest of the swarm have less of an impact, which allows it to explore more of the search space. With a lower inertia, the particle focuses on moving towards promising areas currently found by the rest of the swarm. The NetLogo code controlling this can be seen below: 
+
+`set vx vx + (1 - particle-inertia) * attraction-to-personal-best * (random-float 1.0) * dist * dx` 
+
+`set vy vy + (1 - particle-inertia) * attraction-to-personal-best * (random-float 1.0) * dist * dy`
 
 \newpage
 
@@ -220,4 +233,18 @@ solution, fitness = start_environment(500, 500)
 
 print(solution)
 print(fitness)
-```
+``` 
+
+\newpage
+
+# Appendix B: Figures 
+
+## Problem 1 
+
+![](./images/q1_p30_s2_i0.6_pb17_gb17.png){width=50%}
+![](./images/q1_p80_s2_i0.6_pb17_gb17.png){width=50%}
+![](./images/q1_p30_s6_i0.6_pb17_gb17.png){width=50%}
+![](./images/q1_p30_s2_i0.729_pb17_gb17.png){width=50%}
+![](./images/q1_p30_s2_i0.6_pb1494_gb17.png){width=50%}
+![](./images/q1_p30_s2_i0.6_pb17_gb1494.png){width=50%}
+![](./images/q1_p30_s2_i0.6_pb1494_gb1494.png){width=50%}
