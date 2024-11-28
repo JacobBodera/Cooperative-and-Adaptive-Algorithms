@@ -1,11 +1,9 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-
 BOUNDS = (-5, 5)
 NUMBER_PARTICLES = 20
 MAX_ITERATIONS = 500
-
 
 def objective(pos):
     x, y = pos
@@ -42,7 +40,7 @@ def update_velocities_constriction(x, v, pbest, gbest, c1=2.4944, c2=2.4944):
 
 def update_velocities_gcpso(v, gbest, personal_best, rho = 1, w=0.792):
     r = np.random.uniform(low=0, high=1, size=2)
-    velocity = (
+    velocity = rho * (
         w * v -
         personal_best +
         gbest +
@@ -138,17 +136,14 @@ ACTUAL_MIN_FIT = objective(ACTUAL_MIN_POS)
 print(f"Best Position: {gbest}\nBest Fitness: {fbest}")
 print(f"% Error: {100*abs(fbest - ACTUAL_MIN_FIT)/abs(ACTUAL_MIN_FIT)}")
 
-## Trajectory plot
 plt.figure(figsize=(10, 8))
 for particle_path in trajectories:
     particle_path = np.array(particle_path)
     plt.plot(particle_path[:, 0], particle_path[:, 1], linestyle="--", marker="o", markersize=2, alpha=0.5)
 
-# Mark initial positions
 initial_positions = np.array(initial_ps)
 plt.scatter(initial_positions[:, 0], initial_positions[:, 1], color="blue", marker="x", s=20, label="Starting Positions")
 
-# Mark final global best
 plt.plot(gbest[0], gbest[1], "ro", markersize=10, label="Global Best Position")
 
 plt.xlim(BOUNDS[0], BOUNDS[1])
@@ -160,7 +155,6 @@ plt.legend()
 plt.grid(True)
 # plt.savefig('../images/problem2_a4_trajectories_constriction.png')
 
-## Average fitness plot
 plt.figure(figsize=(10, 6))
 plt.plot(avg_fitness_hist, label="Average Fitness")
 plt.plot(best_fitness_hist, label="Best Fitness", color="red")

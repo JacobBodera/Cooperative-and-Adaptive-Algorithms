@@ -1,29 +1,27 @@
 import random
-import itertools
 from concurrent.futures import ThreadPoolExecutor
-
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 
 PROB_MUTATION_VERSUS_CROSS = 0.4
 PROB_MUTATION = 0.1
 
-POP = 400
-GEN = 1500
-NUM_TEST_CASES = 600
+POP = 700
+GEN = 2000
+NUM_TEST_CASES = 300
 
-DEPTH = 8
-ADDRESSES = 3
+DEPTH = 9
+ADDRESSES = 16
 OUTPUTS = 2 ** ADDRESSES
 
-# terminals = [f'x{i}' for i in range(ADDRESSES)]
-terminals = [f'a{i}' for i in range(ADDRESSES)] + [f'd{i}' for i in range(OUTPUTS)]
+terminals = [f'x{i}' for i in range(ADDRESSES)]
 functions = {
     'AND': lambda x, y: 0 if x == 0 else y,
     'OR': lambda x, y: 1 if x == 1 else y,
-    'NOT': lambda x: not x,
+    'NOT': lambda x: int(not x),
     'IF': lambda x, y, z: y if x else z
 }
 
+# Fitness Cache
 fitness_cache = {}
 
 def cached_fitness(program, test_cases):
@@ -55,24 +53,6 @@ def generate_test_cases_16_middle_3():
         total = sum(binary_input)
         expected = 1 if (7 <= total <= 9) else 0
         test_cases.append((inputs, expected))
-    return test_cases
-
-def generate_test_cases(num_tests=0, num_addresses=ADDRESSES, num_outputs=OUTPUTS):
-    all_cases = list(itertools.product([0, 1], repeat=num_addresses + num_outputs))
-    random.shuffle(all_cases)
-    cases = all_cases[:num_tests] if num_tests > 0 else all_cases
-    test_cases = []
-    for c in cases:
-        test_case = {}
-        expected_address = 0
-        for i in range(num_addresses):
-            test_case[f'a{i}'] = c[i]
-            expected_address = expected_address | c[i] << (num_addresses - 1 - i)
-        for j in range(num_outputs):
-            test_case[f'd{j}'] = c[num_addresses + j]
-        expected_output = test_case[f'd{expected_address}']
-        test_cases.append((test_case, expected_output))
-
     return test_cases
 
 def generate_program(depth=DEPTH):
@@ -132,7 +112,7 @@ def parallel_fitness(population, test_cases):
 
 def start_environment(population_size, generations):
     population = [generate_program() for _ in range(population_size)]
-    test_cases = generate_test_cases(num_tests=NUM_TEST_CASES, num_addresses=ADDRESSES, num_outputs=OUTPUTS)
+    test_cases = generate_test_cases_16_middle_3()[:NUM_TEST_CASES]
     best_fitness = 0
     fitness_history = []
 
@@ -147,7 +127,7 @@ def start_environment(population_size, generations):
         if best_fitness == 1.0:
             return population[0], best_fitness, fitness_history
 
-        new_population = population[:POP // 10]
+        new_population = population[:10]
         while len(new_population) < population_size:
             if random.random() > PROB_MUTATION_VERSUS_CROSS:
                 parent1, parent2 = random.choices(population[:population_size // 2], k=2)
@@ -165,11 +145,11 @@ solution, b_fitness, fitness_history = start_environment(POP, GEN)
 
 print(f'SOLUTION: {solution}')
 print(f'PARTIAL FITNESS: {b_fitness}')
-print(f'COMPLETE FITNESS: {cached_fitness(solution, generate_test_cases())}')
+print(f'COMPLETE FITNESS: {cached_fitness(solution, generate_test_cases_16_middle_3())}')
 
 plt.plot(fitness_history)
 plt.xlabel('Generations')
 plt.ylabel('Best Fitness')
-plt.title('Best Fitness Over Generations for 6-Multiplexer')
+plt.title('Best Fitness Over Generations')
 plt.grid()
-plt.savefig('../images/problem3_11_multi_bigdepth.png')
+plt.savefig('../images/problem3_middle4.png')
