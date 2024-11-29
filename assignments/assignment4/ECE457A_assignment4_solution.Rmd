@@ -74,44 +74,52 @@ $$z = (4 - 2.1x^2 + \frac{x^4}{3})x^2 + xy + (-4+4y^2)y^2$$
 
 ## Part A: Implementing Simple PSO 
 
-To encode the states in my solution, I am using two lists of length $n$, where $n$ is the population size and the two lists contain the position and velocity information for each particle in the population.
+To encode the states in my solution, I am using two lists of length $n$, where $n$ is the population size and the two lists contain the position and velocity information for each particle in the population. The velocity update equation is the inertia weight based equation, which is shown in the next section. The stopping criterion chosen for this problem is simply reaching maximum number of iterations. This was chosen because the different between the optimal solution and the one calculated by the program may have slight rounding differences, so it would be difficult to say when the optimum has been "reached". 
 
 ## Part B: Experimenting with Different Velocity Updating Equations 
 
 ### Interia Weight Updating 
 
-Best Position: [ 0.08981815 -0.71265339] 
+**Best Position**: [ 0.08981815 -0.71265339] 
 
-Best Fitness: -1.031628453434532 
+**Best Fitness**: -1.031628453434532 
 
-% Error: 2.0270804646806416e-09 
+**% Error**: 2.0270804646806416e-09 
 
 ![](./images/problem2_a4_trajectories.png){width=600}
 ![](./images/problem2_a4_fitness.png){width=600}
 
 ### Constriction Factor Updating 
 
-Best Position: [ 0.08984201 -0.7126564 ] 
+**Best Position**: [ 0.08984201 -0.7126564 ] 
 
-Best Fitness: -1.0316284534898774 
+**Best Fitness**: -1.0316284534898774 
 
-% Error: 7.391948579053364e-09 
+**% Error**: 7.391948579053364e-09 
 
 ![](./images/problem2_a4_trajectories_constriction.png){width=600}
 ![](./images/problem2_a4_fitness_constriction.png){width=600}
 
 ### GCPSO Updating 
 
-Best Position: [ 0.08984095 -0.71272291] 
+**Best Position**: [ 0.08984095 -0.71272291] 
 
-Best Fitness: -1.0316284534512004 
+**Best Fitness**: -1.0316284534512004 
 
-% Error: 3.642821514411966e-09 
+**% Error**: 3.642821514411966e-011 
 
 ![](./images/problem2_a4_trajectories_gcpso.png){width=600}
 ![](./images/problem2_a4_fitness_gcpso.png){width=600}
 
+## Part C: Report 
 
+For this algorithm, the choice of parameters is very important to the overall performance of the swarm and its probability to find the optimal solution. The parameters of interest that include: the number of particles in the swarm, the inertia, and the acceleration components $c_1$ and $c_2$. The rationale being choosing the values of each of these parameters comes from the observation from the NetLogo simulation, as well as my own intuition and reasoning. For the population size, it was found through the NetLogo simulation that the larger the population, the greater the performance. This makes sense as one of the most common reasons that an optimum may not be reached is due to getting stuck in local optima. With a larger population initialization, there is a large likelihood that a given particle will be spawned near the optimum point and this information will be transferred to the other particles. For my algorithm, I did a lot of testing and found that even a population of 20 produces very good results and does not improve much beyond this point. As well, larger populations make the plots much more chaotic and hard to read. For the inertia, the smaller value seems to be able to converge much closer to the optimum in the NetLogo simulation. The intuition behind this is that the particles are less likely to overshoot promising search areas with the social component from other particles. This needed to be balance with the exploration of the particles, as a larger inertia means a greater chance to search new areas. After some tests, it was found that a value slightly larger than 1 seemed to work quite well, and so a value of 0.792 was chosen, as it was recommended in the lecture notes. Finally, for the acceleration parameters, testing showed that setting these to relatively small, equal values was most optimal as this provides the best balance of exploration with the inertia and exploitation, as well as moving equally towards personal and global bests. For the first and third implementations, the optimal value of 1.4944 described in the lecture was used, and for the constriction factor, a value of 2.4944 each was used to ensure the value of $\phi$ for the constriction factor was greater than 4.
+
+Looking at the performance of the inertia weight velocity weighting in the first implementation, the results were overall very successful. From the plots, it appears that a particle found the global minimum almost instantly, the the rest of the swarm quickly followed with a few occasional spikes. The swarm was able to achieve the optimal solution with only an error of approximately $2.0271\times10^{-9}$%. From the trajectory plot, it appears that the particles seem to orbit the optima for quite a while before finally converging on the point. This is likely due to the momentum of the particle making it overshoot the point for quite a while until it is sufficiently reduced, similar to how bodies in space orbit a star. For the constriction factor implementation, the results were similarly very positive, with only an error of approximately $7.392\times10^{-9}$%. The best particle almost instantly found the global optima and the other particles were able to quickly converge on that point as well with zero spikes in the fitness. This is reflected in the trajectory plot where it can be seen that there is essentially no overshoot by the particles, and travel directly to the optimum. For the last implementation, the guaranteed convergence PSO, it was very successful with the smallest error to the known optimum of $3.643\times10^{-11}$%. The plots show that the best solution was quickly found that that the rest of the swarm quickly converged on this point with very slight spikes in fitness. From the trajectory plot, it shows that there is some overshooting occurring about the optimal point, however, it seems to be very concentrated. At this scale, the error of this implementation is negligible and is likely due do floating point error within the program. 
+
+The largest difference in performance between these three implementation is between the constriction factor implementation to the other two implementations. For the constriction factor average fitness plot, which takes the entire swarm into account, the plot is monotonically non-decreasing. This implies that at no point does any particle in the swarm overshoot the optimum point to a high enough degree to affect this average. This is further supported in the trajectory plot, where each point seems to head directly to the optimum from their starting positions and there is no orbiting present. This is in contract to the first and third implementations, the average fitness plot do contain points where the value slightly increases and then quickly continues to decrease. This is likely due to the higher weight on the inertial factor in the velocity updating equation, which introduces momentum to the particles and may potentially cause these particles to overshoot areas of interest. Due to these factors, it appears that the constriction factor implementation causes the swarm as a whole converge faster than the other two implementations. This seems true but looking at the average and best fitness lines for each of the three plots where the inertia weight converges around Generation 17, constriction factors converges around Generation 5, and GCPSO converges around Generation 13. 
+
+Another difference that I notice between these implementations is related to the final % error for each algorithm. The inertia weight and constriction factor implementation had extremely small errors, but GCPSO had an error approximately 100x smaller, which in Python with floating point error, is essentially zero. With the first two algorithms they are both able to converge on the optimum quite well, but their velocity values never seem to decrease quite enough (at least in a reasonable number of iterations), whereas GCPSO has the $\rho$ factor which causes the velocity to approach zero after a number of successful movements.
 
 \newpage
 
@@ -127,7 +135,7 @@ Best Fitness: -1.0316284534512004
 
 **Actions**: Actions that can be performed on the population include: crossover, mutation, and/or elimination of a proportion of the current population. 
 
-**Cost**: The cost (or fitness) of a state is the proportion of passed test cases to the total number of test cases of the best program. These test cases are generated based on the specifig problem. Note that the total number of test cases may be a subset of the actual total, but refers to the total number of test cases visible to the program. 
+**Cost**: The cost (or fitness) of a state is the proportion of passed test cases to the total number of test cases of the best program. These test cases are generated based on the specified problem. Note that the total number of test cases may be a subset of the actual total, but refers to the total number of test cases visible to the program. 
 
 $\;$ 
 
@@ -142,7 +150,7 @@ For this problem, there was very few test cases ($2^6=64$), meaning that the pop
 
 A solution was found in $26$ generations, and the plot showing the the fitness over time and the final program can be seen below. 
 
-SOLUTION: 
+**SOLUTION**: 
 
 ```
 ['IF', 'a1', ['IF', ['IF', ['AND', ['AND', ['NOT', 'a1'], 'a1'], 'a1'], ['OR', 'a1', ['OR', 
@@ -150,31 +158,60 @@ SOLUTION:
 ['OR', 'a0', 'd0'], ['AND', 'd0', ['NOT', ['IF', 'd0', ['IF', 'a1', 'a1', 'a0'], 'a0']]]]] 
 ``` 
 
-PARTIAL FITNESS: 1.0 
+**PARTIAL FITNESS**: 1.0 
 
-COMPLETE FITNESS: 1.0 
+**COMPLETE FITNESS**: 1.0 
 
 ![](./images/problem3_6_multi.png)
 
 ## 11-Multiplexer 
 
+For this problem, there was a much larger number of test cases ($2^{11}=2048$), which means that the algorithm cannot have full access to all of the test cases for the fitness evaluation, as this would greatly increase computation demand. To remedy this, only a random subset of the test cases were used for fitness. Through running many tests, I found that a larger population size had much more of an impact on finding a creating a good program than having more test cases. This is likely because having a larger population promotes exploration, especially when the population is first initialized, which avoids getting caught in local maxima. A sufficiently large number of test cases is still important however, because the only way that the program knows it is improving is whether its fitness increases. The larger the number of tests, the greater probability that a program passes a test case which is in the subset. I found that a number around 200-500 test cases does a decent job at detecting improvement, while keeping performance in mind. For this problem, a population size of $800$, number of test cases of $500$,  a depth of $8$, and a maximum generation number of 1000. A large number of generations was attempted but no improvement was seen.
 
-p = 800 n = 500
-SOLUTION: ['IF', 'a1', ['IF', ['AND', ['NOT', ['IF', 'd0', 'a2', 'a2']], 'a0'], 'd6', ['OR', ['AND', ['AND', 'd3', 'a2'], ['NOT', 'a0']], ['AND', ['IF', 'a2', 'a0', 'd2'], ['IF', 'a0', 'd7', 'd2']]]], ['AND', ['IF', ['OR', ['AND', 'd4', 'a0'], ['OR', 'a0', 'a2']], ['OR', ['AND', 'd1', 'a2'], ['IF', 'a2', 'a0', 'd4']], 'd0'], ['OR', 'd5', ['AND', ['NOT', 'a1'], ['NOT', 'a0']]]]] 
+A solution which was 97.6% success was found after this time, and the plot showing the the fitness over time and the final program can be seen below. 
 
-PARTIAL FITNESS: 0.976 
+**SOLUTION**: 
 
-COMPLETE FITNESS: 0.976 
+```
+['IF', 'a1', ['IF', ['AND', ['NOT', ['IF', 'd0', 'a2', 'a2']], 'a0'], 'd6', 
+['OR', ['AND', ['AND', 'd3', 'a2'], ['NOT', 'a0']], ['AND', ['IF', 'a2', 'a0', 
+'d2'], ['IF', 'a0', 'd7', 'd2']]]], ['AND', ['IF', ['OR', ['AND', 'd4', 'a0'], 
+['OR', 'a0', 'a2']], ['OR', ['AND', 'd1', 'a2'], ['IF', 'a2', 'a0', 'd4']], 'd0'], 
+['OR', 'd5', ['AND', ['NOT', 'a1'], ['NOT', 'a0']]]]]
+``` 
+
+**PARTIAL FITNESS**: 0.976 
+
+**COMPLETE FITNESS**: 0.976 
 
 ![](./images/problem3_11_multi_2.png)
 
 ## 16-Middle-3 
 
-SOLUTION: ['AND', ['IF', ['IF', ['IF', ['IF', ['AND', 'x15', 'x0'], ['NOT', 'x5'], ['IF', 'x2', 'x14', 'x5']], ['IF', ['AND', 'x6', 'x5'], ['IF', 'x5', 'x4', 'x12'], ['OR', 'x14', 'x15']], ['IF', ['IF', 'x6', 'x11', 'x7'], ['IF', 'x3', 'x14', 'x3'], ['OR', 'x5', 'x15']]], ['IF', 'x9', ['NOT', ['IF', 'x6', 'x13', 'x15']], ['OR', ['AND', 'x13', 'x10'], ['AND', 'x5', 'x3']]], 'x11'], 'x0', ['AND', ['NOT', ['OR', ['IF', 'x5', 'x14', 'x11'], ['IF', 'x10', 'x11', 'x9']]], ['AND', 'x0', ['IF', ['NOT', 'x2'], ['AND', 'x10', 'x6'], ['OR', 'x15', 'x4']]]]], ['OR', ['IF', ['AND', ['OR', ['AND', 'x3', 'x4'], ['OR', 'x6', 'x15']], 'x5'], ['AND', ['OR', ['NOT', 'x0'], ['IF', 'x8', 'x5', 'x7']], 'x1'], 'x10'], ['AND', ['NOT', ['IF', ['AND', 'x11', 'x15'], ['OR', 'x8', 'x3'], ['NOT', 'x9']]], 'x14']]] 
+For this problem, the issue of test case computation becomes even more of an issue, as in this problem there are $2^{16}=65536$ possible cases. Luckily, with my implementation of this algorithm, this does not make much of a difference in comparison to the previous problem. I used similar parameters to the 11-multiplexer problem and ran multiple tests to see what combination of parameters seemed to produce the best results. As before, a larger population size with a smaller number of test cases seemed to produce the best results while still being efficient in terms of computation time. With this in mind, I chose a population size of $700$ and to run with $300$ test cases. Since this is a generally larger problem than the previous two, I decided that a slightly larger depth of $9$ would allow more flexibility in the program tree and be more likely to discover better solutions. A generation number of 500 was used as by then, very good solutions were found and running past this did not seem to improve the solution. 
 
-PARTIAL FITNESS: 0.9825 
+A solution which was 98.67% success was found after this time, and the plot showing the the fitness over time and the final program can be seen below. 
 
-COMPLETE FITNESS: 0.9825 
+**SOLUTION**: 
+
+```
+['IF', ['OR', 'x1', 'x3'], ['IF', ['OR', ['AND', 'x7', ['IF', ['IF', ['AND', 
+['AND', ['IF', 'x14', 'x5', 'x6'], ['OR', 'x5', 'x11']], 'x8'], 'x2', ['IF', 
+['OR', ['AND', 'x13', 'x13'], ['IF', 'x5', 'x1', 'x5']], ['AND', ['OR', 'x3', 
+'x10'], ['NOT', 'x9']], ['IF', ['OR', 'x5', 'x6'], ['NOT', 'x3'], ['IF', 'x13', 
+'x14', 'x11']]]], ['OR', 'x5', ['AND', ['AND', ['OR', 'x10', 'x10'], ['OR', 
+'x13', 'x14']], ['AND', ['OR', 'x0', 'x5'], ['AND', 'x2', 'x7']]]], 'x0']], 'x9']
+, ['AND', ['NOT', 'x9'], ['IF', ['AND', ['OR', 'x1', ['NOT', ['NOT', ['OR', 'x15',
+'x2']]]], ['OR', ['NOT', ['NOT', ['OR', 'x4', 'x15']]], 'x10']], ['AND', ['AND', 
+['AND', ['NOT', ['AND', 'x13', 'x10']], ['IF', ['AND', 'x2', 'x5'], ['AND', 'x7',
+'x6'], ['IF', 'x5', 'x3', 'x1']]], 'x6'], ['NOT', ['OR', 'x11', ['NOT', ['IF', 
+'x4', 'x2', 'x14']]]]], 'x9']], ['IF', 'x14', ['IF', 'x10', ['AND', 'x5', ['NOT',
+['AND', 'x0', 'x4']]], ['NOT', 'x12']], 'x12']], ['AND', 'x6', 'x14']]
+```
+
+**PARTIAL FITNESS**: 0.9866666666666667
+
+**COMPLETE FITNESS**: 0.9866666666666667
 
 ![](./images/problem3_middle1.png)
 
@@ -370,6 +407,8 @@ plt.legend()
 plt.grid(True)
 # plt.savefig('../images/problem2_a4_fitness_constriction.png')
 ```
+
+\newpage
 
 ## Question 3 
 
